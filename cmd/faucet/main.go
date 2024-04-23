@@ -5,6 +5,8 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+
+	"github.com/planetmint/faucet/config"
 )
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
@@ -22,11 +24,17 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	// Load our configuration file
+	config, err := config.LoadConfig("./")
+	if err != nil {
+		log.Fatalf("fatal error loading config file: %s", err)
+	}
+	serviceBind := config.GetString("service-bind")
+	servicePort := config.GetInt("service-port")
 	// Start our service
-	port := 8080
-	log.Printf("Listening on :%d ...", port)
+	log.Printf("Listening on '%s:%d' ...", serviceBind, servicePort)
 	http.HandleFunc("/", indexHandler)
-	err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
+	err = http.ListenAndServe(fmt.Sprintf("%s:%d", serviceBind, servicePort), nil)
 	if err != nil {
 		log.Fatalln(err)
 	}

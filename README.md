@@ -23,3 +23,12 @@ Format HTML code, e.g.:
 ```
 $ tidy -i -m -w 160 -ashtml -utf8 templates/index.html
 ```
+
+## Configuration
+
+The service needs to be configured via the `./app.toml` file or environment variables. The defaults are:
+```toml
+address = 'plmnt1dyuhg8ldu3d6nvhrvzzemtc3893dys9v9lvdty'
+service-bind = 'localhost'
+service-port = 8080
+```
