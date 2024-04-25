@@ -30,6 +30,7 @@ The service needs to be configured via the `./app.toml` file or environment vari
 ```toml
 address = 'plmnt1dyuhg8ldu3d6nvhrvzzemtc3893dys9v9lvdty'
 amount = 100
+chain-id = 'planetmintgo'
 denom = 'plmnt'
 service-bind = 'localhost'
 service-port = 8080
