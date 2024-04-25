@@ -4,12 +4,16 @@ import "sync"
 
 const DefaultConfigTemplate = `
 address="{{ .Address }}"
+amount={{ .Amount }}
+denom="{{ .Denom }}"
 service-bind="{{ .ServiceBind }}"
 service-port={{ .ServicePort }}
 `
 
 type Config struct {
 	Address     string `mapstructure:"address"`
+	Amount      int    `mapstructure:"amount"`
+	Denom       string `mapstructure:"denom"`
 	ServiceBind string `mapstructure:"service-bind"`
 	ServicePort int    `mapstructure:"service-port"`
 }
@@ -24,6 +28,8 @@ var (
 func DefaultConfig() *Config {
 	return &Config{
 		Address:     "plmnt1dyuhg8ldu3d6nvhrvzzemtc3893dys9v9lvdty",
+		Amount:      100,
+		Denom:       "plmnt",
 		ServiceBind: "localhost",
 		ServicePort: 8080,
 	}

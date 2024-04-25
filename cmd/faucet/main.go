@@ -44,7 +44,7 @@ func sendFunds(query url.Values) (err error) {
 		return
 	}
 	// Create 'bank send' message
-	coin := sdk.NewCoins(sdk.NewInt64Coin("plmnt", 100))
+	coin := sdk.NewCoins(sdk.NewInt64Coin(config.GetConfig().Denom, int64(config.GetConfig().Amount)))
 	_ = banktypes.NewMsgSend(addr0, addr1, coin)
 	return
 }

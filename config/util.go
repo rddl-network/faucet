@@ -21,6 +21,8 @@ func LoadConfig(path string) (v *viper.Viper, err error) {
 	if err == nil {
 		cfg := GetConfig()
 		cfg.Address = v.GetString("address")
+		cfg.Amount = v.GetInt("amount")
+		cfg.Denom = v.GetString("denom")
 		cfg.ServiceBind = v.GetString("service-bind")
 		cfg.ServicePort = v.GetInt("service-port")
 		return
