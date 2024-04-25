@@ -110,6 +110,8 @@ func main() {
 	}
 	serviceBind := config.GetString("service-bind")
 	servicePort := config.GetInt("service-port")
+	chainID := config.GetString("chain-id")
+	libConfig.SetChainID(chainID)
 	// Start our service
 	log.Printf("Listening on '%s:%d' ...", serviceBind, servicePort)
 	http.HandleFunc("/", indexHandler)
