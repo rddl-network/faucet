@@ -15,7 +15,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	err = t.Execute(w, nil)
+	err = t.Execute(w, config.GetConfig())
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		log.Println(err)
