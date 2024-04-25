@@ -13,9 +13,11 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"github.com/planetmint/faucet/config"
 	"github.com/planetmint/faucet/types"
+	"github.com/planetmint/planetmint-go/app"
+	"github.com/planetmint/planetmint-go/lib"
 )
 
-func sendFunds(query url.Values) (err error) {
+func sendFunds(query url.Values) (receivingAddress string, tx sdk.TxResponse, err error) {
 	var result types.SendParams
 	err = mapstructure.Decode(query, &result)
 	if err != nil {
@@ -33,7 +35,7 @@ func sendFunds(query url.Values) (err error) {
 		return
 	}
 	// Is address in request bech32?
-	receivingAddress := result.Address[0]
+	receivingAddress = result.Address[0]
 	addr1, err := sdk.AccAddressFromBech32(receivingAddress)
 	if err != nil {
 		return
@@ -45,16 +47,29 @@ func sendFunds(query url.Values) (err error) {
 	}
 	// Create 'bank send' message
 	coin := sdk.NewCoins(sdk.NewInt64Coin(config.GetConfig().Denom, int64(config.GetConfig().Amount)))
-	_ = banktypes.NewMsgSend(addr0, addr1, coin)
+	msg := banktypes.NewMsgSend(addr0, addr1, coin)
+	out, err := lib.BroadcastTxWithFileLock(addr0, msg)
+	if err != nil {
+		log.Fatal(err)
+	}
+	tx, err = lib.GetTxResponseFromOut(out)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if tx.Code != 0 {
+		log.Printf("%s", tx.RawLog)
+	}
 	return
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	// Are we supposed to send funds?
 	query := r.URL.Query()
+	var recvAddr string
+	var tx sdk.TxResponse
 	var err error
 	if len(query) != 0 {
-		err = sendFunds(query)
+		recvAddr, tx, err = sendFunds(query)
 	}
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -66,7 +81,12 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	err = t.Execute(w, config.GetConfig())
+	indexParams := types.IndexParams{
+		RecvAddr: recvAddr,
+		Tx:       tx,
+		Config:   config.GetConfig(),
+	}
+	err = t.Execute(w, indexParams)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		log.Println(err)
@@ -80,6 +100,9 @@ func main() {
 	accountPubKeyPrefix := accountAddressPrefix + "pub"
 	sdkconfig := sdk.GetConfig()
 	sdkconfig.SetBech32PrefixForAccount(accountAddressPrefix, accountPubKeyPrefix)
+	// Initialize Planetmint lib
+	libConfig := lib.GetConfig()
+	libConfig.SetEncodingConfig(app.MakeEncodingConfig())
 	// Load our configuration file
 	config, err := config.LoadConfig("./")
 	if err != nil {
